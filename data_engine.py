@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from functools import lru_cache # 導入快取套件，讓程式跑得更快
 
 # ▼▼▼ 請將您的 FinMind Token 貼在下方引號內 ▼▼▼
-MY_FINMIND_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNi0wNC0xMyAyMDoxMjo1NCIsInVzZXJfaWQiOiJRaWFuIiwiZW1haWwiOiJpYW45MTE5MTAxMEBnbWFpbC5jb20iLCJpcCI6IjM2LjIzOC4xMjMuMjM2In0.af0-kDmRLah5shXyXRanpqWF9jYJaRiArmWLzE5LdPU"
+MY_FINMIND_TOKEN = ""
 # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 @lru_cache(maxsize=1)
