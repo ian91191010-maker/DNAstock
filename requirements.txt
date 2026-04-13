@@ -2,5 +2,5 @@ streamlit
 pandas
 pandas-ta
 requests
-numpy
+numpy<2.0.0
 python-dateutil
