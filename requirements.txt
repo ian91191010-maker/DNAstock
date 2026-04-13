@@ -1,6 +1,6 @@
 streamlit
-pandas
-pandas-ta
+pandas==1.5.3
+numpy==1.24.3
+pandas-ta==0.3.14b0
 requests
-numpy<2.0.0
 python-dateutil
