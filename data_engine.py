@@ -1,20 +1,22 @@
+import streamlit as st
 import requests
 import pandas as pd
 import pandas_ta as ta
 import datetime
 from dateutil.relativedelta import relativedelta
-from functools import lru_cache # 導入快取套件，讓程式跑得更快
+from functools import lru_cache
 
-# ▼▼▼ 請將您的 FinMind Token 貼在下方引號內 ▼▼▼
-MY_FINMIND_TOKEN = ""
-# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+# 【全新資安機制】讓程式去 Streamlit 的保險箱拿密碼！
+try:
+    MY_FINMIND_TOKEN = st.secrets["FINMIND_TOKEN"]
+except:
+    MY_FINMIND_TOKEN = "" # 如果找不到保險箱（例如在本地端測試），就預設空白
 
 @lru_cache(maxsize=1)
 def _fetch_stock_info_df(token: str) -> pd.DataFrame:
-    """內部函數：下載台股總表，使用 lru_cache 確保每次開啟軟體只會下載一次，不浪費時間"""
     url = "https://api.finmindtrade.com/api/v4/data"
     parameter = {"dataset": "TaiwanStockInfo"}
-    if token and token != "請將您的_TOKEN_貼在這裡":
+    if token:
         parameter["token"] = token
     try:
         response = requests.get(url, params=parameter, timeout=10)
@@ -26,10 +28,8 @@ def _fetch_stock_info_df(token: str) -> pd.DataFrame:
     return pd.DataFrame()
 
 def get_stock_name(stock_id: str, token: str = MY_FINMIND_TOKEN) -> str:
-    """對外開放的函數：輸入代碼，回傳中文股名"""
     df = _fetch_stock_info_df(token)
     if not df.empty:
-        # 將代碼轉為字串進行精準比對
         match = df[df['stock_id'].astype(str) == str(stock_id)]
         if not match.empty:
             return match.iloc[0]['stock_name']
@@ -48,7 +48,7 @@ def fetch_finmind_data(stock_id: str, years: float = 4, token: str = MY_FINMIND_
         "end_date": end_date.strftime("%Y-%m-%d")
     }
     
-    if token and token != "請將您的_TOKEN_貼在這裡":
+    if token:
         parameter["token"] = token
         
     response = requests.get(url, params=parameter)
