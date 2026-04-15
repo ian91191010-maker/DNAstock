@@ -10,7 +10,7 @@ from data_engine import fetch_finmind_data, process_all_indicators, get_stock_na
 # 設定頁面
 st.set_page_config(page_title="飆股DNA指標", layout="wide")
 
-# 1. 修改主題：字體置中，大小縮小約50% (使用 HTML 標籤替代原本的 st.title)
+# 1. 修改主題：字體置中，大小縮小約50%
 st.markdown("<h3 style='text-align: center; margin-bottom: 20px;'>飆股DNA指標</h3>", unsafe_allow_html=True)
 
 with st.sidebar:
@@ -101,7 +101,6 @@ if run_btn:
                         #tooltip {{
                             position: absolute;
                             z-index: 1000;
-                            /* 3. 標記背景虛化(半透明)，並加入毛玻璃效果 */
                             background: rgba(19, 23, 34, 0.4);
                             backdrop-filter: blur(4px);
                             padding: 8px 12px;
@@ -119,12 +118,13 @@ if run_btn:
                             width: 100%;
                             text-align: center;
                             z-index: 10;
-                            /* 浮水印標題同步改小，淡化以免影響視覺 */
-                            color: rgba(224, 227, 235, 0.2);
+                            /* 恢復股票名稱的不透明度，並加上文字陰影確保清晰 */
+                            color: #E0E3EB; 
                             font-size: 20px; 
                             font-weight: bold;
                             pointer-events: none;
                             letter-spacing: 4px;
+                            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
                         }}
                     </style>
                 </head>
@@ -147,13 +147,11 @@ if run_btn:
                                     timeVisible: true,
                                     rightOffset: 80
                                 }},
-                                // 2. 解決手機無法順利向下滑動頁面的問題
                                 handleScroll: {{
-                                    vertTouchDrag: false, // 關閉垂直拖拽，把垂直滑動權限還給瀏覽器
+                                    vertTouchDrag: false,
                                 }}
                             }});
 
-                            // 4. 重新設定 scaleMargins，將圖表間隔縮小約 50%
                             // 1. 主圖
                             chart.priceScale('right').applyOptions({{ scaleMargins: {{ top: 0.0, bottom: 0.52 }} }});
                             const candlestickSeries = chart.addCandlestickSeries({{
@@ -222,8 +220,6 @@ if run_btn:
                                         const volStr = vol !== undefined ? vol.toLocaleString() : 'N/A';
                                         
                                         tooltip.style.display = 'block';
-                                        
-                                        // 3. 調整 Tooltip 位置，讓它跟著十字游標走，顯示在線的下方偏右
                                         tooltip.style.left = param.point.x + 15 + 'px';
                                         tooltip.style.top = param.point.y + 15 + 'px'; 
                                         
