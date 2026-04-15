@@ -7,8 +7,11 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from data_engine import fetch_finmind_data, process_all_indicators, get_stock_name
 
-st.set_page_config(page_title="專業飆股看盤系統", layout="wide")
-st.title("📈 專業飆股_DNA 篩選系統")
+# 設定頁面
+st.set_page_config(page_title="飆股DNA指標", layout="wide")
+
+# 1. 修改主題：字體置中，大小縮小約50% (使用 HTML 標籤替代原本的 st.title)
+st.markdown("<h3 style='text-align: center; margin-bottom: 20px;'>飆股DNA指標</h3>", unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("參數設定")
@@ -45,13 +48,10 @@ if run_btn:
                 
                 wr_data = []
                 score_data = []
-                # 【新增】建立一個專門儲存「日期:成交量」的字典
                 volume_dict = {} 
                 
                 for index, row in df_final.iterrows():
                     date_str = row['time']
-                    
-                    # 記錄成交量
                     volume_dict[date_str] = int(row['volume'])
                     
                     wr_val = row['WILLR_50']
@@ -87,7 +87,7 @@ if run_btn:
                 adx_json = json.dumps(adx_data)
                 wr_json = json.dumps(wr_data)
                 score_json = json.dumps(score_data)
-                volume_json = json.dumps(volume_dict) # 將成交量轉為 JSON 交給前端
+                volume_json = json.dumps(volume_dict)
 
                 html_code = f"""
                 <!DOCTYPE html>
@@ -100,13 +100,13 @@ if run_btn:
                         #tvchart {{ width: 100%; height: 100% }} 
                         #tooltip {{
                             position: absolute;
-                            top: 12px;
-                            left: 12px;
                             z-index: 1000;
-                            background: rgba(19, 23, 34, 0.85);
+                            /* 3. 標記背景虛化(半透明)，並加入毛玻璃效果 */
+                            background: rgba(19, 23, 34, 0.4);
+                            backdrop-filter: blur(4px);
                             padding: 8px 12px;
                             border-radius: 4px;
-                            border: 1px solid #2B2B43;
+                            border: 1px solid rgba(43, 43, 67, 0.5);
                             display: none;
                             pointer-events: none;
                             font-size: 14px;
@@ -114,15 +114,17 @@ if run_btn:
                         }}
                         #chart-title {{
                             position: absolute;
-                            top: 12px;
-                            left: 15px;
+                            top: 15px;
+                            left: 0;
+                            width: 100%;
+                            text-align: center;
                             z-index: 10;
-                            color: #E0E3EB;
-                            font-size: 32px;
+                            /* 浮水印標題同步改小，淡化以免影響視覺 */
+                            color: rgba(224, 227, 235, 0.2);
+                            font-size: 20px; 
                             font-weight: bold;
                             pointer-events: none;
-                            letter-spacing: 2px;
-                            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+                            letter-spacing: 4px;
                         }}
                     </style>
                 </head>
@@ -144,11 +146,16 @@ if run_btn:
                                     barSpacing: 3, 
                                     timeVisible: true,
                                     rightOffset: 80
+                                }},
+                                // 2. 解決手機無法順利向下滑動頁面的問題
+                                handleScroll: {{
+                                    vertTouchDrag: false, // 關閉垂直拖拽，把垂直滑動權限還給瀏覽器
                                 }}
                             }});
 
+                            // 4. 重新設定 scaleMargins，將圖表間隔縮小約 50%
                             // 1. 主圖
-                            chart.priceScale('right').applyOptions({{ scaleMargins: {{ top: 0.0, bottom: 0.55 }} }});
+                            chart.priceScale('right').applyOptions({{ scaleMargins: {{ top: 0.0, bottom: 0.52 }} }});
                             const candlestickSeries = chart.addCandlestickSeries({{
                                 upColor: '#ef5350', downColor: '#26a69a', borderVisible: false, wickUpColor: '#ef5350', wickDownColor: '#26a69a'
                             }});
@@ -160,31 +167,30 @@ if run_btn:
                             ema209Series.setData({ema209_json});
 
                             // 2. DIF
-                            const difSeries = chart.addLineSeries({{ color: '#2962FF', lineWidth: 2, title: 'DIF (模組一)', priceScaleId: 'dif_scale' }});
-                            chart.priceScale('dif_scale').applyOptions({{ scaleMargins: {{ top: 0.48, bottom: 0.42 }} }});
+                            const difSeries = chart.addLineSeries({{ color: '#2962FF', lineWidth: 2, title: 'DIF', priceScaleId: 'dif_scale' }});
+                            chart.priceScale('dif_scale').applyOptions({{ scaleMargins: {{ top: 0.49, bottom: 0.39 }} }});
                             difSeries.setData({dif_json});
 
                             // 3. ADX
-                            const adxSeries = chart.addLineSeries({{ color: '#FF1493', lineWidth: 2, title: 'ADX 300 (模組二)', priceScaleId: 'adx_scale' }});
-                            chart.priceScale('adx_scale').applyOptions({{ scaleMargins: {{ top: 0.61, bottom: 0.29 }} }});
+                            const adxSeries = chart.addLineSeries({{ color: '#FF1493', lineWidth: 2, title: 'ADX', priceScaleId: 'adx_scale' }});
+                            chart.priceScale('adx_scale').applyOptions({{ scaleMargins: {{ top: 0.62, bottom: 0.26 }} }});
                             adxSeries.setData({adx_json});
 
                             // 4. W%R
-                            const wrSeries = chart.addLineSeries({{ color: '#00BCD4', lineWidth: 2, title: 'W%R (模組三)', priceScaleId: 'wr_scale' }});
-                            chart.priceScale('wr_scale').applyOptions({{ scaleMargins: {{ top: 0.74, bottom: 0.16 }} }});
+                            const wrSeries = chart.addLineSeries({{ color: '#00BCD4', lineWidth: 2, title: 'W%R', priceScaleId: 'wr_scale' }});
+                            chart.priceScale('wr_scale').applyOptions({{ scaleMargins: {{ top: 0.75, bottom: 0.13 }} }});
                             wrSeries.setData({wr_json});
-                            wrSeries.createPriceLine({{ price: -20, color: '#FF9800', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '強勢基準線 (-20)' }});
+                            wrSeries.createPriceLine({{ price: -20, color: '#FF9800', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '-20' }});
 
                             // 5. 六大跡象得分
-                            const scoreSeries = chart.addHistogramSeries({{ title: '六跡象得分 (模組四)', priceScaleId: 'score_scale' }});
-                            chart.priceScale('score_scale').applyOptions({{ scaleMargins: {{ top: 0.87, bottom: 0.0 }} }});
+                            const scoreSeries = chart.addHistogramSeries({{ title: 'Score', priceScaleId: 'score_scale' }});
+                            chart.priceScale('score_scale').applyOptions({{ scaleMargins: {{ top: 0.88, bottom: 0.0 }} }});
                             scoreSeries.setData({score_json});
-                            scoreSeries.createPriceLine({{ price: 3, color: '#FFEB3B', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Solid, axisLabelVisible: true, title: '及格線 (3)' }});
+                            scoreSeries.createPriceLine({{ price: 3, color: '#FFEB3B', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Solid, axisLabelVisible: true, title: '3' }});
 
                             chart.timeScale().fitContent();
 
                             const tooltip = document.getElementById('tooltip');
-                            // 【接收成交量資料】
                             const volumeData = {volume_json};
 
                             chart.subscribeCrosshairMove(function(param) {{
@@ -198,7 +204,6 @@ if run_btn:
                                 ) {{
                                     tooltip.style.display = 'none';
                                 }} else {{
-                                    // 確保時間格式轉換正確，用於去字典尋找成交量
                                     let dateStr = param.time;
                                     if (typeof dateStr === 'object') {{
                                         dateStr = dateStr.year + '-' + 
@@ -213,15 +218,15 @@ if run_btn:
                                         const low = data.low.toFixed(2);
                                         const close = data.close.toFixed(2);
                                         
-                                        // 抓取成交量，並加上千分位逗號 (如: 12,345)
                                         const vol = volumeData[dateStr];
                                         const volStr = vol !== undefined ? vol.toLocaleString() : 'N/A';
                                         
                                         tooltip.style.display = 'block';
-                                        tooltip.style.left = param.point.x + 15 + 'px';
-                                        tooltip.style.top = 15 + 'px';
                                         
-                                        // 【更新】將成交量顯示加入 HTML 中
+                                        // 3. 調整 Tooltip 位置，讓它跟著十字游標走，顯示在線的下方偏右
+                                        tooltip.style.left = param.point.x + 15 + 'px';
+                                        tooltip.style.top = param.point.y + 15 + 'px'; 
+                                        
                                         tooltip.innerHTML = `
                                             <div style="font-weight: bold; color: #FFFFFF; font-size: 16px; margin-bottom: 4px;">${{dateStr}}</div>
                                             <div style="color: #d1d4dc;">開盤: <span style="color: #FFF;">${{open}}</span></div>
