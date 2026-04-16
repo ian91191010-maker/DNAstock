@@ -23,12 +23,12 @@ if run_btn:
     if not stock_id:
         st.warning("⚠️ 請先在左側輸入股票代碼！")
     else:
-        with st.spinner(f"正在獲取 {stock_id} 資料並生成五重乾淨圖表..."):
+        with st.spinner(f"正在獲取 {stock_id} 資料..."):
             try:
                 stock_name = get_stock_name(stock_id)
                 display_title = f"{stock_id} {stock_name}" if stock_name else stock_id
                 
-                df = fetch_finmind_data(stock_id, years=years)
+                df = fetch_finmind_data(stock_id, years=10.0) 
                 df_final = process_all_indicators(df)
                 
                 df_final = df_final[~df_final.index.duplicated(keep='last')]
