@@ -28,10 +28,12 @@ if run_btn:
                 stock_name = get_stock_name(stock_id)
                 display_title = f"{stock_id} {stock_name}" if stock_name else stock_id
                 
-                df = fetch_finmind_data(stock_id, years=10.0) 
+                # 建議使用 15 年，讓 ADX 300 暖機更充足
+                df = fetch_finmind_data(stock_id, years=15.0) 
                 df_final = process_all_indicators(df)
                 
-		if not df_final.empty:
+                # 【已修復縮排】全使用空白鍵對齊，避免程式報錯
+                if not df_final.empty:
                     high = df_final['high']
                     low = df_final['low']
                     close = df_final['close']
