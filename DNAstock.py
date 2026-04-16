@@ -31,6 +31,34 @@ if run_btn:
                 df = fetch_finmind_data(stock_id, years=10.0) 
                 df_final = process_all_indicators(df)
                 
+		if not df_final.empty:
+                    high = df_final['high']
+                    low = df_final['low']
+                    close = df_final['close']
+                    
+                    # 計算真實波幅 (TR)
+                    tr1 = high - low
+                    tr2 = (high - close.shift(1)).abs()
+                    tr3 = (low - close.shift(1)).abs()
+                    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+                    
+                    # 計算方向移動 (+DM, -DM)
+                    up = high - high.shift(1)
+                    down = low.shift(1) - low
+                    plus_dm = np.where((up > down) & (up > 0), up, 0.0)
+                    minus_dm = np.where((down > up) & (down > 0), down, 0.0)
+                    
+                    # 使用 Wilder 平滑法 (alpha=1/period) 計算 ATR 與 DI
+                    period = 300
+                    alpha = 1 / period
+                    atr = tr.ewm(alpha=alpha, adjust=False).mean()
+                    plus_di = 100 * pd.Series(plus_dm, index=df_final.index).ewm(alpha=alpha, adjust=False).mean() / atr
+                    minus_di = 100 * pd.Series(minus_dm, index=df_final.index).ewm(alpha=alpha, adjust=False).mean() / atr
+                    
+                    # 計算 DX 與最終的 ADX_300，直接覆蓋 df_final 裡的舊欄位
+                    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di)
+                    df_final['ADX_300'] = dx.ewm(alpha=alpha, adjust=False).mean()
+
                 df_final = df_final[~df_final.index.duplicated(keep='last')]
                 df_final.sort_index(ascending=True, inplace=True)
                 
